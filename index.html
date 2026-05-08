@@ -110,6 +110,39 @@
   .loading{text-align:center;padding:2rem;color:var(--g400);font-size:14px;}
   .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px;}
   @keyframes sp{to{transform:rotate(360deg)}}
+  /* SORT BUTTON */
+  .sort-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--g200);background:white;color:var(--g600);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px;}
+  .sort-btn.active{background:var(--blue);color:white;border-color:var(--blue);}
+  /* CALENDAR */
+  .cal-wrap{background:white;border-radius:var(--rl);border:1.5px solid var(--g200);overflow:hidden;box-shadow:var(--sh);margin-bottom:1.5rem;}
+  .cal-header{background:var(--blue);color:white;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+  .cal-month{font-size:16px;font-weight:700;}
+  .cal-nav{background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .cal-nav:hover{background:rgba(255,255,255,.3);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+  .cal-dow{text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;background:var(--g50);border-bottom:1px solid var(--g200);}
+  .cal-day{min-height:60px;padding:4px;border-right:1px solid var(--g100);border-bottom:1px solid var(--g100);position:relative;cursor:default;transition:background .1s;}
+  .cal-day:nth-child(7n){border-right:none;}
+  .cal-day.has-games{cursor:pointer;background:var(--blue-light);}
+  .cal-day.has-games:hover{background:#d0ddf5;}
+  .cal-day.today .cal-dn{background:var(--blue);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+  .cal-day.other-month .cal-dn{color:var(--g300);}
+  .cal-day.selected{background:#dbeafe;outline:2px solid var(--blue);}
+  .cal-dn{font-size:13px;font-weight:500;color:var(--g700);width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+  .cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px;}
+  .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+  .cal-dot.ko{background:var(--yellow);}
+  .cal-dot.viewing{background:var(--green);}
+  .cal-count{font-size:10px;color:var(--blue);font-weight:600;margin-top:1px;}
+  .cal-legend{display:flex;gap:14px;padding:10px 16px;background:var(--g50);border-top:1px solid var(--g200);font-size:12px;color:var(--g500);}
+  .cal-legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+  /* DAY DETAIL */
+  .day-detail{background:white;border-radius:var(--rl);border:1.5px solid var(--blue);padding:1rem 1.25rem;margin-bottom:1.5rem;display:none;}
+  .day-detail.visible{display:block;}
+  .day-detail-title{font-size:15px;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+  /* TIME GROUP */
+  .tg-header{font-size:12px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;border-bottom:1px solid var(--g100);margin-bottom:6px;margin-top:12px;}
+  .tg-header:first-child{margin-top:0;}
   @media(max-width:520px){.gcv{display:none;}.cdu{min-width:48px;padding:6px 8px;}.cdn{font-size:22px;}}
 </style>
 </head>
@@ -153,6 +186,7 @@
   </div>
   <div class="navtabs">
     <button class="ntab active" onclick="setTab('games',this)">🗓 Spielplan</button>
+    <button class="ntab" onclick="setTab('kalender',this)">📅 Kalender</button>
     <button class="ntab" onclick="setTab('viewing',this)">📍 Public Viewing</button>
   </div>
   <div class="main">
@@ -166,8 +200,43 @@
         <button class="fchip" onclick="setFilter('ARG',this)">🇦🇷 Argentinien</button>
         <button class="fchip" onclick="setFilter('viewing',this)">📍 Mit Viewing</button>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--g500);font-weight:500;">Sortierung:</span>
+        <button class="sort-btn active" id="sort-phase" onclick="setSort('phase',this)">📋 Phase</button>
+        <button class="sort-btn" id="sort-time" onclick="setSort('time',this)">⏰ Anpfiffzeit</button>
+        <button class="sort-btn" id="sort-date" onclick="setSort('date',this)">📅 Datum</button>
+      </div>
       <div id="glist"></div>
     </div>
+    <div id="tab-kalender" style="display:none;">
+      <div class="cal-wrap">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrev()">‹</button>
+          <div class="cal-month" id="cal-month-label">Juni 2026</div>
+          <button class="cal-nav" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-dow">
+          <div class="cal-dow">Mo</div><div class="cal-dow">Di</div><div class="cal-dow">Mi</div>
+          <div class="cal-dow">Do</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div>
+          <div class="cal-dow">So</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <span><span class="cal-legend-dot" style="background:var(--blue);"></span>Gruppenphase</span>
+          <span><span class="cal-legend-dot" style="background:var(--yellow);"></span>K.O.-Phase</span>
+          <span><span class="cal-legend-dot" style="background:var(--green);"></span>Mit Viewing</span>
+        </div>
+      </div>
+      <div class="day-detail" id="day-detail">
+        <div class="day-detail-title">
+          <span id="day-detail-date">Spiele am…</span>
+          <button class="btn btn-sm" onclick="closeDayDetail()">✕</button>
+        </div>
+        <div id="day-detail-games"></div>
+      </div>
+      <div id="cal-month-list"></div>
+    </div>
+
     <div id="tab-viewing" style="display:none;">
       <div class="notice"><span>💡</span><span>Alle Freunde sehen dieselben Viewings in Echtzeit — einfach die URL teilen!</span></div>
       <div class="vhr">
@@ -350,7 +419,8 @@ const GAMES=[
 const FL={SUI:'🇨🇭',GER:'🇩🇪',FRA:'🇫🇷',ARG:'🇦🇷',BRA:'🇧🇷',ESP:'🇪🇸',ENG:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',POR:'🇵🇹',NED:'🇳🇱',BEL:'🇧🇪',MEX:'🇲🇽',USA:'🇺🇸',CAN:'🇨🇦',QAT:'🇶🇦',MAR:'🇲🇦',JPN:'🇯🇵',KOR:'🇰🇷',AUS:'🇦🇺',URU:'🇺🇾',NOR:'🇳🇴',SWE:'🇸🇪',RSA:'🇿🇦',CZE:'🇨🇿',BIH:'🇧🇦',PAR:'🇵🇾',TUR:'🇹🇷',HAI:'🇭🇹',SCO:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',CIV:'🇨🇮',ECU:'🇪🇨',TUN:'🇹🇳',KSA:'🇸🇦',IRN:'🇮🇷',NZL:'🇳🇿',CPV:'🇨🇻',SEN:'🇸🇳',IRQ:'🇮🇶',ALG:'🇩🇿',AUT:'🇦🇹',JOR:'🇯🇴',COD:'🇨🇩',UZB:'🇺🇿',COL:'🇨🇴',CRO:'🇭🇷',GHA:'🇬🇭',PAN:'🇵🇦',EGY:'🇪🇬'};
 const f=k=>FL[k]||'';
 
-let CU=null,VC=[],CF='all',JVI=null,CDT=null,AT='login';
+let CU=null,VC=[],CF='all',JVI=null,CDT=null,AT='login',CS='phase';
+let calYear=2026,calMonth=5; // June = month 5 (0-indexed)
 let KO_TEAMS=JSON.parse(localStorage.getItem('wm_ko_teams')||'{}');
 
 function saveKOLocal(){localStorage.setItem('wm_ko_teams',JSON.stringify(KO_TEAMS));}
@@ -423,8 +493,15 @@ async function showApp(){
 async function loadVC(){const{data}=await sb.from('viewings').select('*,attendees(*)').order('created_at');VC=data||[];}
 function gvfg(gid){return VC.find(v=>v.game_id===gid);}
 
-function setTab(t,btn){document.getElementById('tab-games').style.display=t==='games'?'block':'none';document.getElementById('tab-viewing').style.display=t==='viewing'?'block':'none';document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(t==='viewing')renderV();}
+function setTab(t,btn){
+  ['games','kalender','viewing'].forEach(id=>{document.getElementById('tab-'+id).style.display=t===id?'block':'none';});
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(t==='viewing')renderV();
+  if(t==='kalender')renderCal();
+}
 function setFilter(f,btn){CF=f;document.querySelectorAll('.fchip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderG();}
+function setSort(s,btn){CS=s;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderG();}
 
 function fd(d){return new Date(d+'T12:00:00').toLocaleDateString('de-CH',{weekday:'short',day:'numeric',month:'short'});}
 function gng(){const n=new Date();return GAMES.find(g=>new Date(g.date+'T'+g.time+':00')>n);}
@@ -439,23 +516,16 @@ function renderCD(){
   el.innerHTML=`<div class="cdlbl">Nächstes Spiel</div><div class="cdm">${f(nx.hKey)} ${nxt.home} <span style="opacity:.6;font-weight:400">vs</span> ${nxt.away} ${f(nx.aKey)}</div><div class="cdunits"><div class="cdu"><span class="cdn">${d}</span><span class="cds">Tage</span></div><div class="cdu"><span class="cdn">${String(h).padStart(2,'0')}</span><span class="cds">Std</span></div><div class="cdu"><span class="cdn">${String(m).padStart(2,'0')}</span><span class="cds">Min</span></div><div class="cdu"><span class="cdn">${String(s).padStart(2,'0')}</span><span class="cds">Sek</span></div></div><div class="cddt">${fd(nx.date)}, ${nx.time} Uhr CEST — ${nx.venue}</div>${v?`<div class="cdvh">📍 Viewing bei ${v.host_name} · ${v.attendees.length} kommen</div>`:''}`;
 }
 
-function renderG(){
-  const el=document.getElementById('glist'),nx=gng();
-  let gs=GAMES;
-  if(CF==='viewing')gs=gs.filter(g=>gvfg(g.id));
-  else if(CF!=='all')gs=gs.filter(g=>g.hKey===CF||g.aKey===CF);
-  let html='',lp='';
-  gs.forEach(g=>{
-    if(g.phase!==lp){html+=`<div class="plbl">${g.phase}</div>`;lp=g.phase;}
-    const v=gvfg(g.id),in2=nx&&g.id===nx.id;
-    const teams=getGameTeams(g);
-    const isKO=g.phase!=='Gruppenphase';
-    html+=`<div class="gc${v?' hv':''}${in2?' nx':''}" style="position:relative;">
+function gameCardHTML(g, nx){
+  const v=gvfg(g.id),in2=nx&&g.id===nx.id;
+  const teams=getGameTeams(g);
+  const isKO=g.phase!=='Gruppenphase';
+  return `<div class="gc${v?' hv':''}${in2?' nx':''}" style="position:relative;">
       <div onclick="hgc(${g.id})" style="display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;">
         <div class="gcd"><div class="gcday">${fd(g.date)}</div><div class="gctm">${g.time}</div></div>
         <div class="gct">
           <div class="gctt">${f(g.hKey)} ${teams.home} <span style="color:var(--g400);font-weight:400">–</span> ${teams.away} ${f(g.aKey)}</div>
-          ${g.group?`<div class="gcg">Gruppe ${g.group}</div>`:''}
+          ${g.group?`<div class="gcg">Gruppe ${g.group}</div>`:g.phase!=='Gruppenphase'?`<div class="gcg">${g.phase}</div>`:''}
           <div class="gcv">${g.venue}</div>
         </div>
         <div class="gcb">
@@ -467,7 +537,46 @@ function renderG(){
       </div>
       ${isKO?`<button class="btn btn-sm" style="flex-shrink:0;margin-left:6px;padding:4px 8px;font-size:13px;" onclick="event.stopPropagation();openKOEdit(${g.id})">✏️</button>`:''}
     </div>`;
-  });
+}
+
+function renderG(){
+  const el=document.getElementById('glist'),nx=gng();
+  let gs=GAMES;
+  if(CF==='viewing')gs=gs.filter(g=>gvfg(g.id));
+  else if(CF!=='all')gs=gs.filter(g=>g.hKey===CF||g.aKey===CF);
+
+  let html='';
+
+  if(CS==='phase'){
+    // Default: group by phase
+    let lp='';
+    gs.forEach(g=>{
+      if(g.phase!==lp){html+=`<div class="plbl">${g.phase}</div>`;lp=g.phase;}
+      html+=gameCardHTML(g,nx);
+    });
+  } else if(CS==='time'){
+    // Sort by time of day (HH:MM), group by time slot
+    const sorted=[...gs].sort((a,b)=>a.time.localeCompare(b.time));
+    let lt='';
+    sorted.forEach(g=>{
+      if(g.time!==lt){html+=`<div class="tg-header">⏰ ${g.time} Uhr MESZ</div>`;lt=g.time;}
+      html+=gameCardHTML(g,nx);
+    });
+  } else if(CS==='date'){
+    // Sort by date+time, group by date
+    const sorted=[...gs].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    let ld='';
+    sorted.forEach(g=>{
+      if(g.date!==ld){
+        const dt=new Date(g.date+'T12:00:00');
+        const label=dt.toLocaleDateString('de-CH',{weekday:'long',day:'numeric',month:'long'});
+        html+=`<div class="plbl">📅 ${label}</div>`;
+        ld=g.date;
+      }
+      html+=gameCardHTML(g,nx);
+    });
+  }
+
   el.innerHTML=gs.length?html:`<div class="es"><div class="esi">🔍</div><p>Keine Spiele gefunden</p></div>`;
 }
 
@@ -528,6 +637,118 @@ function cm(id){document.getElementById(id).style.display='none';}
 function moc(e,id){if(e.target===document.getElementById(id))cm(id);}
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('auth-screen').style.display!=='none'){AT==='login'?doLogin():doRegister();}});
+
+// ── CALENDAR ──
+function renderCal(){
+  const monthNames=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  document.getElementById('cal-month-label').textContent=monthNames[calMonth]+' '+calYear;
+
+  const firstDay=new Date(calYear,calMonth,1);
+  // Monday=0 offset
+  let startDow=(firstDay.getDay()+6)%7;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+
+  // Build map: date -> games
+  const gamesByDate={};
+  GAMES.forEach(g=>{
+    if(!gamesByDate[g.date])gamesByDate[g.date]=[];
+    gamesByDate[g.date].push(g);
+  });
+
+  let grid='';
+  // Empty cells before first day
+  for(let i=0;i<startDow;i++) grid+=`<div class="cal-day other-month"><div class="cal-dn"></div></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayGames=gamesByDate[dateStr]||[];
+    const isToday=dateStr===todayStr;
+    const hasGames=dayGames.length>0;
+    const hasViewing=dayGames.some(g=>gvfg(g.id));
+    const isKO=dayGames.some(g=>g.phase!=='Gruppenphase');
+
+    let dots='';
+    if(hasGames){
+      dayGames.forEach(g=>{
+        const isKOGame=g.phase!=='Gruppenphase';
+        const hasV=gvfg(g.id);
+        dots+=`<div class="cal-dot${hasV?' viewing':isKOGame?' ko':''}"></div>`;
+      });
+    }
+
+    grid+=`<div class="cal-day${hasGames?' has-games':''}${isToday?' today':''}" ${hasGames?`onclick="showDayDetail('${dateStr}')"`:''}">
+      <div class="cal-dn">${d}</div>
+      ${hasGames?`<div class="cal-dots">${dots}</div><div class="cal-count">${dayGames.length} Spiel${dayGames.length>1?'e':''}</div>`:''}
+    </div>`;
+  }
+
+  // Fill remaining cells
+  const total=startDow+daysInMonth;
+  const remaining=(7-(total%7))%7;
+  for(let i=0;i<remaining;i++) grid+=`<div class="cal-day other-month"><div class="cal-dn"></div></div>`;
+
+  document.getElementById('cal-grid').innerHTML=grid;
+
+  // Month list below calendar
+  renderCalMonthList();
+}
+
+function renderCalMonthList(){
+  // Show all games of current month in chronological order
+  const monthStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  const monthGames=GAMES.filter(g=>g.date.startsWith(monthStr)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const nx=gng();
+  if(!monthGames.length){
+    document.getElementById('cal-month-list').innerHTML=`<div class="es" style="padding:1.5rem;"><p style="color:var(--g400);">Keine Spiele in diesem Monat</p></div>`;
+    return;
+  }
+  let html='', ld='';
+  monthGames.forEach(g=>{
+    if(g.date!==ld){
+      const dt=new Date(g.date+'T12:00:00');
+      const lbl=dt.toLocaleDateString('de-CH',{weekday:'long',day:'numeric',month:'long'});
+      html+=`<div class="plbl" style="margin-top:1.25rem;">📅 ${lbl}</div>`;
+      ld=g.date;
+    }
+    html+=gameCardHTML(g,nx);
+  });
+  document.getElementById('cal-month-list').innerHTML=html;
+}
+
+function showDayDetail(dateStr){
+  const dayGames=GAMES.filter(g=>g.date===dateStr).sort((a,b)=>a.time.localeCompare(b.time));
+  const nx=gng();
+  const dt=new Date(dateStr+'T12:00:00');
+  const label=dt.toLocaleDateString('de-CH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('day-detail-date').textContent='📅 '+label+' — '+dayGames.length+' Spiel'+(dayGames.length>1?'e':'');
+  document.getElementById('day-detail-games').innerHTML=dayGames.map(g=>gameCardHTML(g,nx)).join('');
+  const dd=document.getElementById('day-detail');
+  dd.classList.add('visible');
+  dd.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // Highlight selected day
+  document.querySelectorAll('.cal-day').forEach(el=>el.classList.remove('selected'));
+  // find by onclick attribute match
+}
+
+function closeDayDetail(){
+  document.getElementById('day-detail').classList.remove('visible');
+}
+
+function calPrev(){
+  calMonth--;
+  if(calMonth<0){calMonth=11;calYear--;}
+  document.getElementById('day-detail').classList.remove('visible');
+  renderCal();
+}
+
+function calNext(){
+  calMonth++;
+  if(calMonth>11){calMonth=0;calYear++;}
+  document.getElementById('day-detail').classList.remove('visible');
+  renderCal();
+}
 
 (async()=>{
   const s=localStorage.getItem('wm_u');
