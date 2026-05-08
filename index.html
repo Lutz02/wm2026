@@ -138,7 +138,7 @@
       <div class="fg"><label class="fl">Passwort wiederholen</label><input type="password" id="rp2" class="fi" placeholder="••••••••"/></div>
       <button class="btn btn-p" onclick="doRegister()" id="rbtn">Account erstellen</button>
     </div>
-    <div class="adiv">🇨🇭 Alle Zeiten in CEST (Schweizer Zeit)</div>
+    <div class="adiv">🇨🇭 Alle Zeiten in MESZ (Mitteleuropäische Sommerzeit)</div>
   </div>
 </div>
 
@@ -192,6 +192,20 @@
   </div>
 </div>
 
+<!-- KO Teams Edit Modal -->
+<div id="mko" class="mo" style="display:none;" onclick="moc(event,'mko')">
+  <div class="md">
+    <div class="mdt" id="ko-modal-title">Teams eintragen</div>
+    <input type="hidden" id="ko-game-id"/>
+    <div class="fg"><label class="fl">Heim-Team</label><input type="text" id="ko-home" class="fi" placeholder="z.B. Schweiz"/></div>
+    <div class="fg"><label class="fl">Auswärts-Team</label><input type="text" id="ko-away" class="fi" placeholder="z.B. Deutschland"/></div>
+    <div class="mda">
+      <button class="btn" onclick="cm('mko')">Abbrechen</button>
+      <button class="btn btn-p" style="width:auto;" onclick="saveKOTeams()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <div id="mjoin" class="mo" style="display:none;" onclick="moc(event,'mjoin')">
   <div class="md">
     <div class="mdt" id="jtitle">Anmelden</div>
@@ -210,108 +224,125 @@ const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 const sb=supabase.createClient(SURL,SKEY);
 
 const GAMES=[
-  {id:1,date:'2026-06-11',time:'21:00',home:'Mexiko',away:'Südafrika',hKey:'MEX',aKey:'RSA',group:'A',phase:'Gruppenphase',venue:'Azteka, Mexiko-Stadt'},
-  {id:2,date:'2026-06-12',time:'04:00',home:'Südkorea',away:'Tschechien',hKey:'KOR',aKey:'CZE',group:'A',phase:'Gruppenphase',venue:'Guadalajara'},
-  {id:3,date:'2026-06-18',time:'18:00',home:'Tschechien',away:'Südafrika',hKey:'CZE',aKey:'RSA',group:'A',phase:'Gruppenphase',venue:'Atlanta'},
-  {id:4,date:'2026-06-19',time:'01:00',home:'Mexiko',away:'Südkorea',hKey:'MEX',aKey:'KOR',group:'A',phase:'Gruppenphase',venue:'Guadalajara'},
-  {id:5,date:'2026-06-25',time:'03:00',home:'Tschechien',away:'Mexiko',hKey:'CZE',aKey:'MEX',group:'A',phase:'Gruppenphase',venue:'Mexiko-Stadt'},
-  {id:6,date:'2026-06-25',time:'03:00',home:'Südafrika',away:'Südkorea',hKey:'RSA',aKey:'KOR',group:'A',phase:'Gruppenphase',venue:'Monterrey'},
-  {id:7,date:'2026-06-12',time:'21:00',home:'Kanada',away:'Bosnien',hKey:'CAN',aKey:'BIH',group:'B',phase:'Gruppenphase',venue:'Toronto'},
-  {id:8,date:'2026-06-13',time:'21:00',home:'Katar',away:'Schweiz',hKey:'QAT',aKey:'SUI',group:'B',phase:'Gruppenphase',venue:"Levi's Stadium, SF"},
-  {id:9,date:'2026-06-18',time:'21:00',home:'Schweiz',away:'Bosnien',hKey:'SUI',aKey:'BIH',group:'B',phase:'Gruppenphase',venue:'SoFi Stadium, LA'},
-  {id:10,date:'2026-06-19',time:'00:00',home:'Kanada',away:'Katar',hKey:'CAN',aKey:'QAT',group:'B',phase:'Gruppenphase',venue:'Vancouver'},
-  {id:11,date:'2026-06-24',time:'04:00',home:'Schweiz',away:'Kanada',hKey:'SUI',aKey:'CAN',group:'B',phase:'Gruppenphase',venue:'BC Place, Vancouver'},
-  {id:12,date:'2026-06-24',time:'04:00',home:'Bosnien',away:'Katar',hKey:'BIH',aKey:'QAT',group:'B',phase:'Gruppenphase',venue:'Seattle'},
-  {id:13,date:'2026-06-14',time:'00:00',home:'Brasilien',away:'Marokko',hKey:'BRA',aKey:'MAR',group:'C',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
-  {id:14,date:'2026-06-14',time:'03:00',home:'Haiti',away:'Schottland',hKey:'HAI',aKey:'SCO',group:'C',phase:'Gruppenphase',venue:'Boston'},
-  {id:15,date:'2026-06-20',time:'00:00',home:'Schottland',away:'Marokko',hKey:'SCO',aKey:'MAR',group:'C',phase:'Gruppenphase',venue:'Boston'},
-  {id:16,date:'2026-06-20',time:'03:00',home:'Brasilien',away:'Haiti',hKey:'BRA',aKey:'HAI',group:'C',phase:'Gruppenphase',venue:'Philadelphia'},
-  {id:17,date:'2026-06-25',time:'00:00',home:'Schottland',away:'Brasilien',hKey:'SCO',aKey:'BRA',group:'C',phase:'Gruppenphase',venue:'Miami'},
-  {id:18,date:'2026-06-25',time:'00:00',home:'Marokko',away:'Haiti',hKey:'MAR',aKey:'HAI',group:'C',phase:'Gruppenphase',venue:'Atlanta'},
-  {id:19,date:'2026-06-13',time:'03:00',home:'USA',away:'Paraguay',hKey:'USA',aKey:'PAR',group:'D',phase:'Gruppenphase',venue:'Los Angeles'},
-  {id:20,date:'2026-06-13',time:'06:00',home:'Australien',away:'Türkei',hKey:'AUS',aKey:'TUR',group:'D',phase:'Gruppenphase',venue:'Vancouver'},
-  {id:21,date:'2026-06-19',time:'06:00',home:'Türkei',away:'Paraguay',hKey:'TUR',aKey:'PAR',group:'D',phase:'Gruppenphase',venue:'San Francisco'},
-  {id:22,date:'2026-06-19',time:'21:00',home:'USA',away:'Australien',hKey:'USA',aKey:'AUS',group:'D',phase:'Gruppenphase',venue:'Seattle'},
-  {id:23,date:'2026-06-26',time:'04:00',home:'Türkei',away:'USA',hKey:'TUR',aKey:'USA',group:'D',phase:'Gruppenphase',venue:'Los Angeles'},
-  {id:24,date:'2026-06-26',time:'04:00',home:'Paraguay',away:'Australien',hKey:'PAR',aKey:'AUS',group:'D',phase:'Gruppenphase',venue:'San Francisco'},
-  {id:25,date:'2026-06-14',time:'19:00',home:'Deutschland',away:'Curaçao',hKey:'GER',aKey:'CUR',group:'E',phase:'Gruppenphase',venue:'Houston'},
-  {id:26,date:'2026-06-15',time:'01:00',home:'Elfenbeinküste',away:'Ecuador',hKey:'CIV',aKey:'ECU',group:'E',phase:'Gruppenphase',venue:'Philadelphia'},
-  {id:27,date:'2026-06-20',time:'22:00',home:'Deutschland',away:'Elfenbeinküste',hKey:'GER',aKey:'CIV',group:'E',phase:'Gruppenphase',venue:'Toronto'},
-  {id:28,date:'2026-06-21',time:'02:00',home:'Ecuador',away:'Curaçao',hKey:'ECU',aKey:'CUR',group:'E',phase:'Gruppenphase',venue:'Kansas City'},
-  {id:29,date:'2026-06-25',time:'22:00',home:'Ecuador',away:'Deutschland',hKey:'ECU',aKey:'GER',group:'E',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
-  {id:30,date:'2026-06-25',time:'22:00',home:'Curaçao',away:'Elfenbeinküste',hKey:'CUR',aKey:'CIV',group:'E',phase:'Gruppenphase',venue:'Philadelphia'},
-  {id:31,date:'2026-06-14',time:'22:00',home:'Niederlande',away:'Japan',hKey:'NED',aKey:'JPN',group:'F',phase:'Gruppenphase',venue:'Dallas'},
-  {id:32,date:'2026-06-15',time:'04:00',home:'Schweden',away:'Tunesien',hKey:'SWE',aKey:'TUN',group:'F',phase:'Gruppenphase',venue:'Monterrey'},
-  {id:33,date:'2026-06-20',time:'19:00',home:'Niederlande',away:'Schweden',hKey:'NED',aKey:'SWE',group:'F',phase:'Gruppenphase',venue:'Houston'},
+  // GRUPPE A
+  {id:1,date:'2026-06-11',time:'23:30',home:'Mexiko',away:'Südafrika',hKey:'MEX',aKey:'RSA',group:'A',phase:'Gruppenphase',venue:'Azteka, Mexiko-Stadt'},
+  {id:2,date:'2026-06-12',time:'03:00',home:'Südkorea',away:'Tschechien',hKey:'KOR',aKey:'CZE',group:'A',phase:'Gruppenphase',venue:'Guadalajara'},
+  {id:3,date:'2026-06-18',time:'21:00',home:'Tschechien',away:'Südafrika',hKey:'CZE',aKey:'RSA',group:'A',phase:'Gruppenphase',venue:'Atlanta'},
+  {id:4,date:'2026-06-19',time:'03:00',home:'Mexiko',away:'Südkorea',hKey:'MEX',aKey:'KOR',group:'A',phase:'Gruppenphase',venue:'Guadalajara'},
+  {id:5,date:'2026-06-25',time:'05:00',home:'Tschechien',away:'Mexiko',hKey:'CZE',aKey:'MEX',group:'A',phase:'Gruppenphase',venue:'Mexiko-Stadt'},
+  {id:6,date:'2026-06-25',time:'05:00',home:'Südafrika',away:'Südkorea',hKey:'RSA',aKey:'KOR',group:'A',phase:'Gruppenphase',venue:'Monterrey'},
+  // GRUPPE B
+  {id:7,date:'2026-06-13',time:'02:00',home:'Kanada',away:'Bosnien',hKey:'CAN',aKey:'BIH',group:'B',phase:'Gruppenphase',venue:'Toronto'},
+  {id:8,date:'2026-06-13',time:'23:00',home:'Katar',away:'Schweiz',hKey:'QAT',aKey:'SUI',group:'B',phase:'Gruppenphase',venue:"San Francisco"},
+  {id:9,date:'2026-06-19',time:'02:00',home:'Schweiz',away:'Bosnien',hKey:'SUI',aKey:'BIH',group:'B',phase:'Gruppenphase',venue:'Los Angeles'},
+  {id:10,date:'2026-06-19',time:'05:00',home:'Kanada',away:'Katar',hKey:'CAN',aKey:'QAT',group:'B',phase:'Gruppenphase',venue:'Vancouver'},
+  {id:11,date:'2026-06-24',time:'05:00',home:'Schweiz',away:'Kanada',hKey:'SUI',aKey:'CAN',group:'B',phase:'Gruppenphase',venue:'Vancouver'},
+  {id:12,date:'2026-06-24',time:'02:00',home:'Bosnien',away:'Katar',hKey:'BIH',aKey:'QAT',group:'B',phase:'Gruppenphase',venue:'Seattle'},
+  // GRUPPE C
+  {id:13,date:'2026-06-14',time:'02:00',home:'Brasilien',away:'Marokko',hKey:'BRA',aKey:'MAR',group:'C',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
+  {id:14,date:'2026-06-14',time:'05:00',home:'Haiti',away:'Schottland',hKey:'HAI',aKey:'SCO',group:'C',phase:'Gruppenphase',venue:'Boston'},
+  {id:15,date:'2026-06-20',time:'02:00',home:'Schottland',away:'Marokko',hKey:'SCO',aKey:'MAR',group:'C',phase:'Gruppenphase',venue:'Boston'},
+  {id:16,date:'2026-06-20',time:'05:00',home:'Brasilien',away:'Haiti',hKey:'BRA',aKey:'HAI',group:'C',phase:'Gruppenphase',venue:'Philadelphia'},
+  {id:17,date:'2026-06-25',time:'02:00',home:'Schottland',away:'Brasilien',hKey:'SCO',aKey:'BRA',group:'C',phase:'Gruppenphase',venue:'Miami'},
+  {id:18,date:'2026-06-25',time:'02:00',home:'Marokko',away:'Haiti',hKey:'MAR',aKey:'HAI',group:'C',phase:'Gruppenphase',venue:'Atlanta'},
+  // GRUPPE D
+  {id:19,date:'2026-06-13',time:'05:00',home:'USA',away:'Paraguay',hKey:'USA',aKey:'PAR',group:'D',phase:'Gruppenphase',venue:'Los Angeles'},
+  {id:20,date:'2026-06-13',time:'08:00',home:'Australien',away:'Türkei',hKey:'AUS',aKey:'TUR',group:'D',phase:'Gruppenphase',venue:'Vancouver'},
+  {id:21,date:'2026-06-19',time:'08:00',home:'Türkei',away:'Paraguay',hKey:'TUR',aKey:'PAR',group:'D',phase:'Gruppenphase',venue:'San Francisco'},
+  {id:22,date:'2026-06-20',time:'00:00',home:'USA',away:'Australien',hKey:'USA',aKey:'AUS',group:'D',phase:'Gruppenphase',venue:'Seattle'},
+  {id:23,date:'2026-06-26',time:'08:00',home:'Türkei',away:'USA',hKey:'TUR',aKey:'USA',group:'D',phase:'Gruppenphase',venue:'Los Angeles'},
+  {id:24,date:'2026-06-26',time:'08:00',home:'Paraguay',away:'Australien',hKey:'PAR',aKey:'AUS',group:'D',phase:'Gruppenphase',venue:'San Francisco'},
+  // GRUPPE E
+  {id:25,date:'2026-06-14',time:'21:00',home:'Deutschland',away:'Curaçao',hKey:'GER',aKey:'CUR',group:'E',phase:'Gruppenphase',venue:'Houston'},
+  {id:26,date:'2026-06-15',time:'03:00',home:'Elfenbeinküste',away:'Ecuador',hKey:'CIV',aKey:'ECU',group:'E',phase:'Gruppenphase',venue:'Philadelphia'},
+  {id:27,date:'2026-06-21',time:'01:00',home:'Deutschland',away:'Elfenbeinküste',hKey:'GER',aKey:'CIV',group:'E',phase:'Gruppenphase',venue:'Toronto'},
+  {id:28,date:'2026-06-21',time:'04:00',home:'Ecuador',away:'Curaçao',hKey:'ECU',aKey:'CUR',group:'E',phase:'Gruppenphase',venue:'Kansas City'},
+  {id:29,date:'2026-06-26',time:'02:00',home:'Ecuador',away:'Deutschland',hKey:'ECU',aKey:'GER',group:'E',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
+  {id:30,date:'2026-06-26',time:'02:00',home:'Curaçao',away:'Elfenbeinküste',hKey:'CUR',aKey:'CIV',group:'E',phase:'Gruppenphase',venue:'Philadelphia'},
+  // GRUPPE F
+  {id:31,date:'2026-06-15',time:'00:00',home:'Niederlande',away:'Japan',hKey:'NED',aKey:'JPN',group:'F',phase:'Gruppenphase',venue:'Dallas'},
+  {id:32,date:'2026-06-15',time:'06:00',home:'Schweden',away:'Tunesien',hKey:'SWE',aKey:'TUN',group:'F',phase:'Gruppenphase',venue:'Monterrey'},
+  {id:33,date:'2026-06-20',time:'21:00',home:'Niederlande',away:'Schweden',hKey:'NED',aKey:'SWE',group:'F',phase:'Gruppenphase',venue:'Houston'},
   {id:34,date:'2026-06-21',time:'06:00',home:'Tunesien',away:'Japan',hKey:'TUN',aKey:'JPN',group:'F',phase:'Gruppenphase',venue:'Monterrey'},
-  {id:35,date:'2026-06-26',time:'01:00',home:'Tunesien',away:'Niederlande',hKey:'TUN',aKey:'NED',group:'F',phase:'Gruppenphase',venue:'Kansas City'},
-  {id:36,date:'2026-06-26',time:'01:00',home:'Japan',away:'Schweden',hKey:'JPN',aKey:'SWE',group:'F',phase:'Gruppenphase',venue:'Dallas'},
-  {id:37,date:'2026-06-15',time:'21:00',home:'Belgien',away:'Ägypten',hKey:'BEL',aKey:'EGY',group:'G',phase:'Gruppenphase',venue:'Seattle'},
-  {id:38,date:'2026-06-16',time:'03:00',home:'Iran',away:'Neuseeland',hKey:'IRN',aKey:'NZL',group:'G',phase:'Gruppenphase',venue:'Los Angeles'},
-  {id:39,date:'2026-06-21',time:'21:00',home:'Belgien',away:'Iran',hKey:'BEL',aKey:'IRN',group:'G',phase:'Gruppenphase',venue:'Los Angeles'},
-  {id:40,date:'2026-06-22',time:'03:00',home:'Neuseeland',away:'Ägypten',hKey:'NZL',aKey:'EGY',group:'G',phase:'Gruppenphase',venue:'Vancouver'},
+  {id:35,date:'2026-06-26',time:'03:00',home:'Tunesien',away:'Niederlande',hKey:'TUN',aKey:'NED',group:'F',phase:'Gruppenphase',venue:'Kansas City'},
+  {id:36,date:'2026-06-26',time:'03:00',home:'Japan',away:'Schweden',hKey:'JPN',aKey:'SWE',group:'F',phase:'Gruppenphase',venue:'Dallas'},
+  // GRUPPE G
+  {id:37,date:'2026-06-15',time:'23:00',home:'Belgien',away:'Ägypten',hKey:'BEL',aKey:'EGY',group:'G',phase:'Gruppenphase',venue:'Seattle'},
+  {id:38,date:'2026-06-16',time:'05:00',home:'Iran',away:'Neuseeland',hKey:'IRN',aKey:'NZL',group:'G',phase:'Gruppenphase',venue:'Los Angeles'},
+  {id:39,date:'2026-06-22',time:'00:00',home:'Belgien',away:'Iran',hKey:'BEL',aKey:'IRN',group:'G',phase:'Gruppenphase',venue:'Los Angeles'},
+  {id:40,date:'2026-06-22',time:'05:00',home:'Neuseeland',away:'Ägypten',hKey:'NZL',aKey:'EGY',group:'G',phase:'Gruppenphase',venue:'Vancouver'},
   {id:41,date:'2026-06-27',time:'05:00',home:'Neuseeland',away:'Belgien',hKey:'NZL',aKey:'BEL',group:'G',phase:'Gruppenphase',venue:'Vancouver'},
   {id:42,date:'2026-06-27',time:'05:00',home:'Ägypten',away:'Iran',hKey:'EGY',aKey:'IRN',group:'G',phase:'Gruppenphase',venue:'Seattle'},
-  {id:43,date:'2026-06-15',time:'18:00',home:'Spanien',away:'Kap Verde',hKey:'ESP',aKey:'CPV',group:'H',phase:'Gruppenphase',venue:'Atlanta'},
-  {id:44,date:'2026-06-16',time:'00:00',home:'Saudi-Arabien',away:'Uruguay',hKey:'KSA',aKey:'URU',group:'H',phase:'Gruppenphase',venue:'Miami'},
-  {id:45,date:'2026-06-21',time:'18:00',home:'Spanien',away:'Saudi-Arabien',hKey:'ESP',aKey:'KSA',group:'H',phase:'Gruppenphase',venue:'Atlanta'},
-  {id:46,date:'2026-06-22',time:'00:00',home:'Uruguay',away:'Kap Verde',hKey:'URU',aKey:'CPV',group:'H',phase:'Gruppenphase',venue:'Miami'},
-  {id:47,date:'2026-06-27',time:'02:00',home:'Uruguay',away:'Spanien',hKey:'URU',aKey:'ESP',group:'H',phase:'Gruppenphase',venue:'Guadalajara'},
-  {id:48,date:'2026-06-27',time:'02:00',home:'Kap Verde',away:'Saudi-Arabien',hKey:'CPV',aKey:'KSA',group:'H',phase:'Gruppenphase',venue:'Houston'},
-  {id:49,date:'2026-06-16',time:'21:00',home:'Frankreich',away:'Senegal',hKey:'FRA',aKey:'SEN',group:'I',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
-  {id:50,date:'2026-06-17',time:'00:00',home:'Irak',away:'Norwegen',hKey:'IRQ',aKey:'NOR',group:'I',phase:'Gruppenphase',venue:'Boston'},
-  {id:51,date:'2026-06-22',time:'23:00',home:'Frankreich',away:'Irak',hKey:'FRA',aKey:'IRQ',group:'I',phase:'Gruppenphase',venue:'Philadelphia'},
-  {id:52,date:'2026-06-23',time:'02:00',home:'Norwegen',away:'Senegal',hKey:'NOR',aKey:'SEN',group:'I',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
-  {id:53,date:'2026-06-26',time:'21:00',home:'Norwegen',away:'Frankreich',hKey:'NOR',aKey:'FRA',group:'I',phase:'Gruppenphase',venue:'Boston'},
-  {id:54,date:'2026-06-26',time:'21:00',home:'Senegal',away:'Irak',hKey:'SEN',aKey:'IRQ',group:'I',phase:'Gruppenphase',venue:'Toronto'},
-  {id:55,date:'2026-06-17',time:'03:00',home:'Argentinien',away:'Algerien',hKey:'ARG',aKey:'ALG',group:'J',phase:'Gruppenphase',venue:'Kansas City'},
-  {id:56,date:'2026-06-17',time:'06:00',home:'Österreich',away:'Jordanien',hKey:'AUT',aKey:'JOR',group:'J',phase:'Gruppenphase',venue:'San Francisco'},
-  {id:57,date:'2026-06-22',time:'19:00',home:'Argentinien',away:'Österreich',hKey:'ARG',aKey:'AUT',group:'J',phase:'Gruppenphase',venue:'Dallas'},
-  {id:58,date:'2026-06-23',time:'03:00',home:'Jordanien',away:'Algerien',hKey:'JOR',aKey:'ALG',group:'J',phase:'Gruppenphase',venue:'San Francisco'},
-  {id:59,date:'2026-06-28',time:'04:00',home:'Jordanien',away:'Argentinien',hKey:'JOR',aKey:'ARG',group:'J',phase:'Gruppenphase',venue:'Dallas'},
-  {id:60,date:'2026-06-28',time:'04:00',home:'Algerien',away:'Österreich',hKey:'ALG',aKey:'AUT',group:'J',phase:'Gruppenphase',venue:'Kansas City'},
-  {id:61,date:'2026-06-17',time:'19:00',home:'Portugal',away:'DR Kongo',hKey:'POR',aKey:'COD',group:'K',phase:'Gruppenphase',venue:'Houston'},
-  {id:62,date:'2026-06-18',time:'04:00',home:'Usbekistan',away:'Kolumbien',hKey:'UZB',aKey:'COL',group:'K',phase:'Gruppenphase',venue:'Mexiko-Stadt'},
-  {id:63,date:'2026-06-23',time:'19:00',home:'Portugal',away:'Usbekistan',hKey:'POR',aKey:'UZB',group:'K',phase:'Gruppenphase',venue:'Houston'},
-  {id:64,date:'2026-06-24',time:'03:00',home:'Kolumbien',away:'DR Kongo',hKey:'COL',aKey:'COD',group:'K',phase:'Gruppenphase',venue:'Guadalajara'},
-  {id:65,date:'2026-06-28',time:'01:30',home:'Kolumbien',away:'Portugal',hKey:'COL',aKey:'POR',group:'K',phase:'Gruppenphase',venue:'Miami'},
-  {id:66,date:'2026-06-28',time:'01:30',home:'DR Kongo',away:'Usbekistan',hKey:'COD',aKey:'UZB',group:'K',phase:'Gruppenphase',venue:'Atlanta'},
-  {id:67,date:'2026-06-17',time:'22:00',home:'England',away:'Kroatien',hKey:'ENG',aKey:'CRO',group:'L',phase:'Gruppenphase',venue:'Dallas'},
-  {id:68,date:'2026-06-17',time:'01:00',home:'Ghana',away:'Panama',hKey:'GHA',aKey:'PAN',group:'L',phase:'Gruppenphase',venue:'Toronto'},
-  {id:69,date:'2026-06-22',time:'23:00',home:'England',away:'Ghana',hKey:'ENG',aKey:'GHA',group:'L',phase:'Gruppenphase',venue:'Boston'},
-  {id:70,date:'2026-06-24',time:'01:00',home:'Panama',away:'Kroatien',hKey:'PAN',aKey:'CRO',group:'L',phase:'Gruppenphase',venue:'Toronto'},
-  {id:71,date:'2026-06-27',time:'23:00',home:'Panama',away:'England',hKey:'PAN',aKey:'ENG',group:'L',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
-  {id:72,date:'2026-06-27',time:'23:00',home:'Kroatien',away:'Ghana',hKey:'CRO',aKey:'GHA',group:'L',phase:'Gruppenphase',venue:'Philadelphia'},
-  {id:73,date:'2026-06-28',time:'21:00',home:'2. Gr.A',away:'2. Gr.B',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Los Angeles'},
-  {id:74,date:'2026-06-29',time:'19:00',home:'1. Gr.C',away:'2. Gr.F',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Houston'},
-  {id:75,date:'2026-06-29',time:'22:30',home:'1. Gr.E',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Boston'},
-  {id:76,date:'2026-06-30',time:'02:00',home:'1. Gr.F',away:'2. Gr.C',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Monterrey'},
-  {id:77,date:'2026-06-30',time:'19:00',home:'2. Gr.E',away:'2. Gr.I',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Dallas'},
-  {id:78,date:'2026-06-30',time:'23:00',home:'1. Gr.I',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'MetLife, New Jersey'},
-  {id:79,date:'2026-07-01',time:'02:00',home:'1. Gr.A',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Mexiko-Stadt'},
-  {id:80,date:'2026-07-01',time:'18:00',home:'1. Gr.L',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Atlanta'},
-  {id:81,date:'2026-07-01',time:'22:00',home:'1. Gr.G',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Seattle'},
-  {id:82,date:'2026-07-02',time:'02:00',home:'1. Gr.D',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'San Francisco'},
-  {id:83,date:'2026-07-02',time:'21:00',home:'1. Gr.H',away:'2. Gr.J',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Los Angeles'},
-  {id:84,date:'2026-07-03',time:'01:00',home:'2. Gr.K',away:'2. Gr.L',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Toronto'},
-  {id:85,date:'2026-07-03',time:'05:00',home:'1. Gr.B',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Vancouver'},
-  {id:86,date:'2026-07-03',time:'20:00',home:'2. Gr.D',away:'2. Gr.G',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Dallas'},
-  {id:87,date:'2026-07-04',time:'00:00',home:'1. Gr.J',away:'2. Gr.H',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Miami'},
-  {id:88,date:'2026-07-04',time:'03:30',home:'1. Gr.K',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Kansas City'},
-  {id:89,date:'2026-07-04',time:'19:00',home:'AF 1',away:'AF 2',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Houston'},
-  {id:90,date:'2026-07-04',time:'23:00',home:'AF 3',away:'AF 4',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Philadelphia'},
-  {id:91,date:'2026-07-05',time:'22:00',home:'AF 5',away:'AF 6',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'MetLife, New Jersey'},
-  {id:92,date:'2026-07-06',time:'02:00',home:'AF 7',away:'AF 8',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Mexiko-Stadt'},
-  {id:93,date:'2026-07-06',time:'21:00',home:'AF 9',away:'AF 10',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Dallas'},
-  {id:94,date:'2026-07-07',time:'02:00',home:'AF 11',away:'AF 12',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Seattle'},
-  {id:95,date:'2026-07-07',time:'18:00',home:'AF 13',away:'AF 14',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Atlanta'},
-  {id:96,date:'2026-07-07',time:'22:00',home:'AF 15',away:'AF 16',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Vancouver'},
-  {id:97,date:'2026-07-09',time:'22:00',home:'VF 1',away:'VF 2',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Boston'},
-  {id:98,date:'2026-07-10',time:'21:00',home:'VF 3',away:'VF 4',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Los Angeles'},
-  {id:99,date:'2026-07-11',time:'23:00',home:'VF 5',away:'VF 6',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Miami'},
-  {id:100,date:'2026-07-12',time:'02:00',home:'VF 7',away:'VF 8',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Kansas City'},
+  // GRUPPE H
+  {id:43,date:'2026-06-15',time:'20:00',home:'Spanien',away:'Kap Verde',hKey:'ESP',aKey:'CPV',group:'H',phase:'Gruppenphase',venue:'Atlanta'},
+  {id:44,date:'2026-06-16',time:'02:00',home:'Saudi-Arabien',away:'Uruguay',hKey:'KSA',aKey:'URU',group:'H',phase:'Gruppenphase',venue:'Miami'},
+  {id:45,date:'2026-06-21',time:'20:00',home:'Spanien',away:'Saudi-Arabien',hKey:'ESP',aKey:'KSA',group:'H',phase:'Gruppenphase',venue:'Atlanta'},
+  {id:46,date:'2026-06-22',time:'02:00',home:'Uruguay',away:'Kap Verde',hKey:'URU',aKey:'CPV',group:'H',phase:'Gruppenphase',venue:'Miami'},
+  {id:47,date:'2026-06-27',time:'04:00',home:'Uruguay',away:'Spanien',hKey:'URU',aKey:'ESP',group:'H',phase:'Gruppenphase',venue:'Guadalajara'},
+  {id:48,date:'2026-06-27',time:'04:00',home:'Kap Verde',away:'Saudi-Arabien',hKey:'CPV',aKey:'KSA',group:'H',phase:'Gruppenphase',venue:'Houston'},
+  // GRUPPE I
+  {id:49,date:'2026-06-16',time:'23:00',home:'Frankreich',away:'Senegal',hKey:'FRA',aKey:'SEN',group:'I',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
+  {id:50,date:'2026-06-17',time:'02:00',home:'Irak',away:'Norwegen',hKey:'IRQ',aKey:'NOR',group:'I',phase:'Gruppenphase',venue:'Boston'},
+  {id:51,date:'2026-06-23',time:'01:00',home:'Frankreich',away:'Irak',hKey:'FRA',aKey:'IRQ',group:'I',phase:'Gruppenphase',venue:'Philadelphia'},
+  {id:52,date:'2026-06-23',time:'04:00',home:'Norwegen',away:'Senegal',hKey:'NOR',aKey:'SEN',group:'I',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
+  {id:53,date:'2026-06-27',time:'00:00',home:'Norwegen',away:'Frankreich',hKey:'NOR',aKey:'FRA',group:'I',phase:'Gruppenphase',venue:'Boston'},
+  {id:54,date:'2026-06-27',time:'00:00',home:'Senegal',away:'Irak',hKey:'SEN',aKey:'IRQ',group:'I',phase:'Gruppenphase',venue:'Toronto'},
+  // GRUPPE J
+  {id:55,date:'2026-06-17',time:'05:00',home:'Argentinien',away:'Algerien',hKey:'ARG',aKey:'ALG',group:'J',phase:'Gruppenphase',venue:'Kansas City'},
+  {id:56,date:'2026-06-17',time:'08:00',home:'Österreich',away:'Jordanien',hKey:'AUT',aKey:'JOR',group:'J',phase:'Gruppenphase',venue:'San Francisco'},
+  {id:57,date:'2026-06-22',time:'21:00',home:'Argentinien',away:'Österreich',hKey:'ARG',aKey:'AUT',group:'J',phase:'Gruppenphase',venue:'Dallas'},
+  {id:58,date:'2026-06-23',time:'05:00',home:'Jordanien',away:'Algerien',hKey:'JOR',aKey:'ALG',group:'J',phase:'Gruppenphase',venue:'San Francisco'},
+  {id:59,date:'2026-06-28',time:'06:00',home:'Jordanien',away:'Argentinien',hKey:'JOR',aKey:'ARG',group:'J',phase:'Gruppenphase',venue:'Dallas'},
+  {id:60,date:'2026-06-28',time:'06:00',home:'Algerien',away:'Österreich',hKey:'ALG',aKey:'AUT',group:'J',phase:'Gruppenphase',venue:'Kansas City'},
+  // GRUPPE K
+  {id:61,date:'2026-06-17',time:'21:00',home:'Portugal',away:'DR Kongo',hKey:'POR',aKey:'COD',group:'K',phase:'Gruppenphase',venue:'Houston'},
+  {id:62,date:'2026-06-18',time:'06:00',home:'Usbekistan',away:'Kolumbien',hKey:'UZB',aKey:'COL',group:'K',phase:'Gruppenphase',venue:'Mexiko-Stadt'},
+  {id:63,date:'2026-06-23',time:'21:00',home:'Portugal',away:'Usbekistan',hKey:'POR',aKey:'UZB',group:'K',phase:'Gruppenphase',venue:'Houston'},
+  {id:64,date:'2026-06-24',time:'05:00',home:'Kolumbien',away:'DR Kongo',hKey:'COL',aKey:'COD',group:'K',phase:'Gruppenphase',venue:'Guadalajara'},
+  {id:65,date:'2026-06-28',time:'03:30',home:'Kolumbien',away:'Portugal',hKey:'COL',aKey:'POR',group:'K',phase:'Gruppenphase',venue:'Miami'},
+  {id:66,date:'2026-06-28',time:'03:30',home:'DR Kongo',away:'Usbekistan',hKey:'COD',aKey:'UZB',group:'K',phase:'Gruppenphase',venue:'Atlanta'},
+  // GRUPPE L
+  {id:67,date:'2026-06-18',time:'02:00',home:'England',away:'Kroatien',hKey:'ENG',aKey:'CRO',group:'L',phase:'Gruppenphase',venue:'Dallas'},
+  {id:68,date:'2026-06-18',time:'01:00',home:'Ghana',away:'Panama',hKey:'GHA',aKey:'PAN',group:'L',phase:'Gruppenphase',venue:'Toronto'},
+  {id:69,date:'2026-06-23',time:'01:00',home:'England',away:'Ghana',hKey:'ENG',aKey:'GHA',group:'L',phase:'Gruppenphase',venue:'Boston'},
+  {id:70,date:'2026-06-24',time:'03:00',home:'Panama',away:'Kroatien',hKey:'PAN',aKey:'CRO',group:'L',phase:'Gruppenphase',venue:'Toronto'},
+  {id:71,date:'2026-06-28',time:'01:00',home:'Panama',away:'England',hKey:'PAN',aKey:'ENG',group:'L',phase:'Gruppenphase',venue:'MetLife, New Jersey'},
+  {id:72,date:'2026-06-28',time:'01:00',home:'Kroatien',away:'Ghana',hKey:'CRO',aKey:'GHA',group:'L',phase:'Gruppenphase',venue:'Philadelphia'},
+  // SECHZEHNTELFINALE (KO-Phase - Teams werden nachgetragen)
+  {id:73,date:'2026-06-29',time:'02:00',home:'2. Gr.A',away:'2. Gr.B',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Los Angeles'},
+  {id:74,date:'2026-06-29',time:'22:00',home:'1. Gr.C',away:'2. Gr.F',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Houston'},
+  {id:75,date:'2026-06-30',time:'01:00',home:'1. Gr.E',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Boston'},
+  {id:76,date:'2026-06-30',time:'04:00',home:'1. Gr.F',away:'2. Gr.C',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Monterrey'},
+  {id:77,date:'2026-06-30',time:'23:00',home:'2. Gr.E',away:'2. Gr.I',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Dallas'},
+  {id:78,date:'2026-07-01',time:'03:00',home:'1. Gr.I',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'MetLife, New Jersey'},
+  {id:79,date:'2026-07-01',time:'06:00',home:'1. Gr.A',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Mexiko-Stadt'},
+  {id:80,date:'2026-07-01',time:'20:00',home:'1. Gr.L',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Atlanta'},
+  {id:81,date:'2026-07-02',time:'00:00',home:'1. Gr.G',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Seattle'},
+  {id:82,date:'2026-07-02',time:'04:00',home:'1. Gr.D',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'San Francisco'},
+  {id:83,date:'2026-07-03',time:'02:00',home:'1. Gr.H',away:'2. Gr.J',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Los Angeles'},
+  {id:84,date:'2026-07-03',time:'05:00',home:'2. Gr.K',away:'2. Gr.L',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Toronto'},
+  {id:85,date:'2026-07-03',time:'07:00',home:'1. Gr.B',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Vancouver'},
+  {id:86,date:'2026-07-04',time:'02:00',home:'2. Gr.D',away:'2. Gr.G',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Dallas'},
+  {id:87,date:'2026-07-04',time:'05:00',home:'1. Gr.J',away:'2. Gr.H',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Miami'},
+  {id:88,date:'2026-07-04',time:'08:00',home:'1. Gr.K',away:'3. Platz',hKey:'',aKey:'',group:'',phase:'Sechzehntelfinale',venue:'Kansas City'},
+  // ACHTELFINALE
+  {id:89,date:'2026-07-05',time:'02:00',home:'AF 1',away:'AF 2',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Houston'},
+  {id:90,date:'2026-07-05',time:'22:00',home:'AF 3',away:'AF 4',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Philadelphia'},
+  {id:91,date:'2026-07-06',time:'22:00',home:'AF 5',away:'AF 6',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'MetLife, New Jersey'},
+  {id:92,date:'2026-07-07',time:'03:00',home:'AF 7',away:'AF 8',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Mexiko-Stadt'},
+  {id:93,date:'2026-07-07',time:'22:00',home:'AF 9',away:'AF 10',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Dallas'},
+  {id:94,date:'2026-07-08',time:'03:00',home:'AF 11',away:'AF 12',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Seattle'},
+  {id:95,date:'2026-07-08',time:'20:00',home:'AF 13',away:'AF 14',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Atlanta'},
+  {id:96,date:'2026-07-09',time:'00:00',home:'AF 15',away:'AF 16',hKey:'',aKey:'',group:'',phase:'Achtelfinale',venue:'Vancouver'},
+  // VIERTELFINALE
+  {id:97,date:'2026-07-10',time:'22:00',home:'VF 1',away:'VF 2',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Boston'},
+  {id:98,date:'2026-07-11',time:'21:00',home:'VF 3',away:'VF 4',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Los Angeles'},
+  {id:99,date:'2026-07-12',time:'22:00',home:'VF 5',away:'VF 6',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Miami'},
+  {id:100,date:'2026-07-13',time:'02:00',home:'VF 7',away:'VF 8',hKey:'',aKey:'',group:'',phase:'Viertelfinale',venue:'Kansas City'},
+  // HALBFINALE
   {id:101,date:'2026-07-14',time:'21:00',home:'HF 1',away:'HF 2',hKey:'',aKey:'',group:'',phase:'Halbfinale',venue:'Dallas'},
   {id:102,date:'2026-07-15',time:'21:00',home:'HF 3',away:'HF 4',hKey:'',aKey:'',group:'',phase:'Halbfinale',venue:'Atlanta'},
+  // PLATZ 3 + FINALE
   {id:103,date:'2026-07-18',time:'21:00',home:'Platz-3 (1)',away:'Platz-3 (2)',hKey:'',aKey:'',group:'',phase:'Spiel um Platz 3',venue:'Miami'},
   {id:104,date:'2026-07-19',time:'21:00',home:'Finalist 1',away:'Finalist 2',hKey:'',aKey:'',group:'',phase:'Finale',venue:'MetLife Stadium, New Jersey'},
 ];
@@ -320,6 +351,37 @@ const FL={SUI:'🇨🇭',GER:'🇩🇪',FRA:'🇫🇷',ARG:'🇦🇷',BRA:'🇧�
 const f=k=>FL[k]||'';
 
 let CU=null,VC=[],CF='all',JVI=null,CDT=null,AT='login';
+let KO_TEAMS=JSON.parse(localStorage.getItem('wm_ko_teams')||'{}');
+
+function saveKOLocal(){localStorage.setItem('wm_ko_teams',JSON.stringify(KO_TEAMS));}
+
+function openKOEdit(gameId){
+  const g=GAMES.find(x=>x.id===gameId);
+  if(!g)return;
+  const saved=KO_TEAMS[gameId]||{};
+  document.getElementById('ko-modal-title').textContent='Teams eintragen — '+g.phase;
+  document.getElementById('ko-game-id').value=gameId;
+  document.getElementById('ko-home').value=saved.home||'';
+  document.getElementById('ko-away').value=saved.away||'';
+  document.getElementById('mko').style.display='flex';
+}
+
+function saveKOTeams(){
+  const id=parseInt(document.getElementById('ko-game-id').value);
+  const home=document.getElementById('ko-home').value.trim();
+  const away=document.getElementById('ko-away').value.trim();
+  if(!home||!away){alert('Bitte beide Teams eingeben.');return;}
+  KO_TEAMS[id]={home,away};
+  saveKOLocal();
+  cm('mko');
+  renderG();
+  renderCD();
+}
+
+function getGameTeams(g){
+  if(KO_TEAMS[g.id]){return{home:KO_TEAMS[g.id].home,away:KO_TEAMS[g.id].away,edited:true};}
+  return{home:g.home,away:g.away,edited:false};
+}
 
 function switchTab(t){AT=t;document.getElementById('lf').style.display=t==='login'?'block':'none';document.getElementById('rf').style.display=t==='register'?'block':'none';document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));showErr('');}
 function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.style.display=m?'block':'none';}
@@ -373,7 +435,8 @@ function renderCD(){
   const dt=new Date(nx.date+'T'+nx.time+':00'),df=Math.max(0,dt-new Date());
   const d=Math.floor(df/86400000),h=Math.floor((df%86400000)/3600000),m=Math.floor((df%3600000)/60000),s=Math.floor((df%60000)/1000);
   const v=gvfg(nx.id);
-  el.innerHTML=`<div class="cdlbl">Nächstes Spiel</div><div class="cdm">${f(nx.hKey)} ${nx.home} <span style="opacity:.6;font-weight:400">vs</span> ${nx.away} ${f(nx.aKey)}</div><div class="cdunits"><div class="cdu"><span class="cdn">${d}</span><span class="cds">Tage</span></div><div class="cdu"><span class="cdn">${String(h).padStart(2,'0')}</span><span class="cds">Std</span></div><div class="cdu"><span class="cdn">${String(m).padStart(2,'0')}</span><span class="cds">Min</span></div><div class="cdu"><span class="cdn">${String(s).padStart(2,'0')}</span><span class="cds">Sek</span></div></div><div class="cddt">${fd(nx.date)}, ${nx.time} Uhr CEST — ${nx.venue}</div>${v?`<div class="cdvh">📍 Viewing bei ${v.host_name} · ${v.attendees.length} kommen</div>`:''}`;
+  const nxt=getGameTeams(nx);
+  el.innerHTML=`<div class="cdlbl">Nächstes Spiel</div><div class="cdm">${f(nx.hKey)} ${nxt.home} <span style="opacity:.6;font-weight:400">vs</span> ${nxt.away} ${f(nx.aKey)}</div><div class="cdunits"><div class="cdu"><span class="cdn">${d}</span><span class="cds">Tage</span></div><div class="cdu"><span class="cdn">${String(h).padStart(2,'0')}</span><span class="cds">Std</span></div><div class="cdu"><span class="cdn">${String(m).padStart(2,'0')}</span><span class="cds">Min</span></div><div class="cdu"><span class="cdn">${String(s).padStart(2,'0')}</span><span class="cds">Sek</span></div></div><div class="cddt">${fd(nx.date)}, ${nx.time} Uhr CEST — ${nx.venue}</div>${v?`<div class="cdvh">📍 Viewing bei ${v.host_name} · ${v.attendees.length} kommen</div>`:''}`;
 }
 
 function renderG(){
@@ -385,7 +448,25 @@ function renderG(){
   gs.forEach(g=>{
     if(g.phase!==lp){html+=`<div class="plbl">${g.phase}</div>`;lp=g.phase;}
     const v=gvfg(g.id),in2=nx&&g.id===nx.id;
-    html+=`<div class="gc${v?' hv':''}${in2?' nx':''}" onclick="hgc(${g.id})"><div class="gcd"><div class="gcday">${fd(g.date)}</div><div class="gctm">${g.time}</div></div><div class="gct"><div class="gctt">${f(g.hKey)} ${g.home} <span style="color:var(--g400);font-weight:400">–</span> ${g.away} ${f(g.aKey)}</div>${g.group?`<div class="gcg">Gruppe ${g.group}</div>`:''}<div class="gcv">${g.venue}</div></div><div class="gcb">${in2?'<span class="bdg bb">Nächstes</span>':''}${v?`<span class="bdg bg">📍 ${v.host_name}</span>`:''}${v?`<span class="bdg bgr">${v.attendees.length} kommen</span>`:''}</div></div>`;
+    const teams=getGameTeams(g);
+    const isKO=g.phase!=='Gruppenphase';
+    html+=`<div class="gc${v?' hv':''}${in2?' nx':''}" style="position:relative;">
+      <div onclick="hgc(${g.id})" style="display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;">
+        <div class="gcd"><div class="gcday">${fd(g.date)}</div><div class="gctm">${g.time}</div></div>
+        <div class="gct">
+          <div class="gctt">${f(g.hKey)} ${teams.home} <span style="color:var(--g400);font-weight:400">–</span> ${teams.away} ${f(g.aKey)}</div>
+          ${g.group?`<div class="gcg">Gruppe ${g.group}</div>`:''}
+          <div class="gcv">${g.venue}</div>
+        </div>
+        <div class="gcb">
+          ${in2?'<span class="bdg bb">Nächstes</span>':''}
+          ${v?`<span class="bdg bg">📍 ${v.host_name}</span>`:''}
+          ${v?`<span class="bdg bgr">${v.attendees.length} kommen</span>`:''}
+          ${isKO&&teams.edited?'<span class="bdg bg">✓</span>':''}
+        </div>
+      </div>
+      ${isKO?`<button class="btn btn-sm" style="flex-shrink:0;margin-left:6px;padding:4px 8px;font-size:13px;" onclick="event.stopPropagation();openKOEdit(${g.id})">✏️</button>`:''}
+    </div>`;
   });
   el.innerHTML=gs.length?html:`<div class="es"><div class="esi">🔍</div><p>Keine Spiele gefunden</p></div>`;
 }
